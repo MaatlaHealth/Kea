@@ -50,8 +50,8 @@ export async function signInAction(
     const input = parseForm(signInSchema, formData);
     const meta = await requestMeta();
 
-    await enforceRateLimit("signIn", `${input.email}`);
-    await enforceRateLimit("signIn", `ip:${meta.ipAddress ?? "unknown"}`);
+    await enforceRateLimit("signIn", input.email);
+    await enforceRateLimit("signInAddress", meta.ipAddress ?? "unknown");
 
     const [user] = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
 

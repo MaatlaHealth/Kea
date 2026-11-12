@@ -7,12 +7,15 @@ import { NextResponse, type NextRequest } from "next/server";
  * visitor is redirected to sign in rather than shown an error page. It is a
  * convenience, not a security control: every page and action resolves the
  * session against the database and checks permissions on the server.
+ *
+ * Next 16 renamed this file convention from `middleware` to `proxy`, and
+ * looks for an export named `proxy`.
  */
 
 const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME ?? "kea_session";
 const PATIENT_COOKIE = "kea_patient_session";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (pathname.startsWith("/app")) {

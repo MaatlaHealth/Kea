@@ -1,4 +1,6 @@
-import { expect, type Page } from "@playwright/test";
+import path from "node:path";
+
+import { expect, type Browser, type Page } from "@playwright/test";
 
 /**
  * Shared helpers for the end to end suite.
@@ -18,23 +20,21 @@ export const ACCOUNTS = {
   admin: "demo.admin@kea.invalid",
 } as const;
 
-export async function signIn(page: Page, email: string) {
-  await page.goto("/sign-in");
-  await page.getByLabel("Work email address").fill(email);
-  await page.getByLabel("Password", { exact: false }).fill(DEMO_PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL(/\/app/);
+export type Role = keyof typeof ACCOUNTS;
+
+/** Where the setup project writes each role's saved session. */
+export function storageStatePath(role: string): string {
+  return path.join(process.cwd(), "playwright", ".auth", `${role}.json`);
 }
 
-export async function signOut(page: Page) {
-  await page.getByRole("button", { name: /signed in|demo\./i }).first().click().catch(() => {});
-  const signOutButton = page.getByRole("button", { name: "Sign out" });
-  if (await signOutButton.isVisible().catch(() => false)) {
-    await signOutButton.click();
-    await page.waitForURL(/\/sign-in/);
-  } else {
-    await page.context().clearCookies();
-  }
+/**
+ * Opens a page already signed in as the given role, using the session the
+ * setup project saved. The caller closes the context when finished.
+ */
+export async function pageAs(browser: Browser, role: Role) {
+  const context = await browser.newContext({ storageState: storageStatePath(role) });
+  const page = await context.newPage();
+  return { context, page };
 }
 
 /** Reads the referral reference from the detail page heading. */

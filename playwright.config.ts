@@ -33,8 +33,17 @@ export default defineConfig({
   },
   projects: [
     {
+      // Signs in once per role and saves the session, so the journey suite
+      // does not spend the sign in rate limit on itself.
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
       name: "desktop-chromium",
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+      testIgnore: [/mobile\.spec\.ts/, /auth\.setup\.ts/],
+      dependencies: ["setup"],
     },
     {
       name: "mobile-chromium",

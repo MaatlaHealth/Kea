@@ -20,7 +20,18 @@ export type RateLimitRule = {
 };
 
 export const RATE_LIMITS = {
+  /**
+   * Per account. This is the credential stuffing control: eight attempts in
+   * ten minutes against one email address.
+   */
   signIn: { limit: 8, windowSeconds: 600 },
+  /**
+   * Per network address, and deliberately far more generous. A clinic puts
+   * its whole staff behind one address, so a tight limit here would lock out
+   * a facility at the start of a shift. This catches crude spraying across
+   * many accounts, not repeated attempts against one.
+   */
+  signInAddress: { limit: 60, windowSeconds: 600 },
   passwordReset: { limit: 5, windowSeconds: 3600 },
   patientCodeRequest: { limit: 5, windowSeconds: 900 },
   patientCodeVerify: { limit: 8, windowSeconds: 900 },
