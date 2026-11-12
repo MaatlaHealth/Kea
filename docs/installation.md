@@ -4,7 +4,7 @@
 
 | Component | Version | Notes |
 | --- | --- | --- |
-| Node.js | 20.9 or later | 22 LTS is what CI uses. |
+| Node.js | 20.9 or later | 22 LTS is what CI uses, 24 also works. |
 | npm | 10 or later | Ships with Node. |
 | PostgreSQL | 14 or later | 16 is what CI and Docker Compose use. |
 | Python | 3.11 or later | Only for the optional prediction service. |

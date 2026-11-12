@@ -44,6 +44,8 @@ No database. These cover the rules the product depends on being right.
   real bug**: `rolesAt` previously resolved no organisation when the facility
   was outside the user's scope, which let one organisation's roles apply at
   another's facility. Fixed in `src/lib/auth/context.ts`.
+- A nurse can close the pathway their clinic owns, and still cannot
+  acknowledge or record attendance for the hospital.
 
 **`security.test.ts`** Passwords, tokens, TOTP, webhook signatures, audit.
 
@@ -141,6 +143,24 @@ consent gate and the patient portal sign in.
 
 The suite deliberately asserts **no performance threshold**. A passing
 threshold on synthetic data would be false assurance.
+
+## What the suites have caught
+
+Worth recording, because it is the argument for keeping them:
+
+- **Cross organisation permission leak.** The permission unit tests found
+  that a role granted in one organisation applied at another organisation's
+  facility, because the organisation could not be resolved from a facility
+  outside the user's scope.
+- **Two broken `ON CONFLICT` clauses.** The integration suite, on its first
+  run against a real database, failed everywhere downstream of referral
+  creation. The cause was two conflict targets naming partial unique indexes
+  without repeating their predicate, which PostgreSQL rejects. Message
+  dispatch and task deduplication were both affected, and neither could have
+  been caught by type checking or by a unit test with a stubbed database.
+- **A missing permission.** The same run showed that a nurse could not record
+  follow up as complete or close a referral, so a service without a dedicated
+  coordinator could never close a pathway.
 
 ## Running the integration tests locally
 
