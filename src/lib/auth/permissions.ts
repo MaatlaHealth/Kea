@@ -124,6 +124,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "referral:create",
     "referral:submit",
     "referral:cancel",
+    // Follow up happens at the referring clinic, so the nurse who does it
+    // records it and closes the pathway. Without this the loop could only be
+    // closed by a coordinator, and a service without one could never close a
+    // referral at all.
+    "referral:close",
     "note:create",
     "document:upload",
     "message:send",
@@ -180,7 +185,8 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   platform_admin: "Manages organisations, platform settings and support access.",
   organisation_admin: "Manages facilities, staff and settings across the whole organisation.",
   facility_admin: "Manages staff, settings and referral activity for one facility.",
-  nurse_midwife: "Registers patients and creates outgoing referrals at one facility.",
+  nurse_midwife:
+    "Registers patients, creates outgoing referrals and closes the pathway after follow up, at one facility.",
   receiving_clinician: "Works the incoming referral queue and records care outcomes.",
   referral_coordinator: "Resolves unacknowledged referrals, missed visits and follow up.",
   programme_analyst: "Reads aggregate reporting only. Has no access to patient records.",

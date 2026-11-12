@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { asc, eq } from "drizzle-orm";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { PathwayToggle } from "@/components/app/admin-forms";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, EmptyState } from "@/components/ui/feedback";
@@ -23,7 +24,13 @@ export default async function PathwaysPage() {
   if (!organisationId) throw new AuthorisationError("No organisation is in scope for your account.");
 
   if (!can(ctx, "organisation:manage", { organisationId })) {
-    throw new AuthorisationError("Only an organisation administrator can change referral pathways.");
+    return (
+      <NoAccess
+        description="Referral pathways decide which facility may refer to which, so only an organisation administrator can change them."
+        backHref="/app/admin"
+        backLabel="Back to administration"
+      />
+    );
   }
 
   const [rows, pathways] = await Promise.all([

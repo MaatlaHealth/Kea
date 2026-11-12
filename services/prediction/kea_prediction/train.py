@@ -83,7 +83,7 @@ def evaluate(pipeline: Pipeline, x_test: np.ndarray, y_test: np.ndarray) -> dict
         "brier_score": float(brier_score_loss(y_test, probabilities)),
         "log_loss": float(log_loss(y_test, probabilities)),
         "positive_rate": float(np.mean(y_test)),
-        "n_test": int(len(y_test)),
+        "n_test": len(y_test),
     }
 
 

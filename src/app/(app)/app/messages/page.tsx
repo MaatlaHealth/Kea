@@ -4,6 +4,7 @@ import { and, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { MessageSquare } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { FilterBar, Pagination } from "@/components/app/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +22,6 @@ import { messages, patients, referrals, messageStatusEnum, type MessageStatus } 
 import { accessibleFacilityIds, canAnywhere } from "@/lib/auth/context";
 import { requireAuth } from "@/lib/auth/session";
 import { integrations } from "@/lib/env";
-import { AuthorisationError } from "@/lib/errors";
 import { formatDateTime, humanise, maskPhone } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -34,7 +34,9 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function MessagesPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireAuth();
   if (!canAnywhere(ctx, "message:read")) {
-    throw new AuthorisationError("Your role does not include message history.");
+    return (
+      <NoAccess description="Message history is part of the patient record, so it is available only to roles that can read patient records." />
+    );
   }
 
   const params = await searchParams;

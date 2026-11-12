@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FileSearch, Plus } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { FilterBar, Pagination } from "@/components/app/filter-bar";
 import { PriorityBadge, ReferralStatusBadge } from "@/components/app/status-badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,12 @@ function single(value: string | string[] | undefined): string | undefined {
 
 export default async function ReferralsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireAuth();
+  if (!canAnywhere(ctx, "referral:read")) {
+    return (
+      <NoAccess description="Referrals are available to clinical and coordination roles. Your role does not include them." />
+    );
+  }
+
   const params = await searchParams;
 
   const status = single(params.status);

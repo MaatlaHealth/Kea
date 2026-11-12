@@ -218,6 +218,16 @@ describe("who may perform a transition", () => {
     ).toBe(true);
   });
 
+  it("lets the referring nurse complete follow up and close the pathway", () => {
+    expect(
+      checkTransition(nurseAtClinic, SIDES, "follow_up_required", "follow_up_completed").allowed,
+    ).toBe(true);
+    expect(checkTransition(nurseAtClinic, SIDES, "follow_up_completed", "closed").allowed).toBe(
+      true,
+    );
+    expect(checkTransition(nurseAtClinic, SIDES, "care_completed", "closed").allowed).toBe(true);
+  });
+
   it("refuses a nurse the permissions their role does not carry", () => {
     const nurseAtHospital = context({
       memberships: [{ organisationId: ORG, facilityId: HOSPITAL, role: "nurse_midwife" }],

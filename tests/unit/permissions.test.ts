@@ -96,6 +96,15 @@ describe("role definitions", () => {
     expect(roleGrants("programme_analyst", "analytics:read")).toBe(true);
   });
 
+  it("lets a nurse close the pathway their clinic owns", () => {
+    // Follow up happens at the referring clinic. If the nurse who does it
+    // cannot record it, a service with no coordinator can never close a
+    // referral.
+    expect(roleGrants("nurse_midwife", "referral:close")).toBe(true);
+    expect(roleGrants("nurse_midwife", "referral:acknowledge")).toBe(false);
+    expect(roleGrants("nurse_midwife", "referral:record_attendance")).toBe(false);
+  });
+
   it("keeps clinical roles out of organisation administration", () => {
     for (const role of ["nurse_midwife", "receiving_clinician"] as const) {
       expect(roleGrants(role, "organisation:manage")).toBe(false);

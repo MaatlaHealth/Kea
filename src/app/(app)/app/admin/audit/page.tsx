@@ -3,6 +3,7 @@ import { and, count, desc, eq, ilike, or } from "drizzle-orm";
 import { ScrollText } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { FilterBar, Pagination } from "@/components/app/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +35,13 @@ export default async function AuditPage({ searchParams }: { searchParams: Search
   const organisationId = primaryOrganisationId(ctx);
   if (!organisationId) throw new AuthorisationError("No organisation is in scope for your account.");
   if (!can(ctx, "audit:read", { organisationId })) {
-    throw new AuthorisationError("Your role does not allow reading the audit log.");
+    return (
+      <NoAccess
+        description="The audit log is available to administrators and coordinators responsible for oversight."
+        backHref="/app/admin"
+        backLabel="Back to administration"
+      />
+    );
   }
 
   const params = await searchParams;

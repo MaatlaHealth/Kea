@@ -1,8 +1,8 @@
 import Link from "next/link";
 
+import { NoAccess } from "@/components/app/no-access";
 import { canAnywhere } from "@/lib/auth/context";
 import { requireAuth } from "@/lib/auth/session";
-import { AuthorisationError } from "@/lib/errors";
 
 const TABS = [
   { href: "/app/admin", label: "Overview" },
@@ -16,7 +16,9 @@ const TABS = [
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireAuth();
   if (!canAnywhere(ctx, "user:manage")) {
-    throw new AuthorisationError("Your role does not include administration.");
+    return (
+      <NoAccess description="Administration is available to facility and organisation administrators. Your role does not include it." />
+    );
   }
 
   return (

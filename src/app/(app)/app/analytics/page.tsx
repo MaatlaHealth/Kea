@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Download } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { CategoryBarChart, ReferralTrendChart } from "@/components/app/charts";
 import { FilterBar } from "@/components/app/filter-bar";
 import { MetricCard } from "@/components/app/metric-card";
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/table";
 import { canAnywhere } from "@/lib/auth/context";
 import { requireAuth } from "@/lib/auth/session";
-import { AuthorisationError } from "@/lib/errors";
 import {
   SMALL_CELL_THRESHOLD,
   exceptionBreakdown,
@@ -44,7 +44,9 @@ const RANGE_DAYS: Record<string, number> = { "30": 30, "90": 90, "180": 180, "36
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireAuth();
   if (!canAnywhere(ctx, "analytics:read")) {
-    throw new AuthorisationError("Your role does not include analytics.");
+    return (
+      <NoAccess description="Analytics is available to programme analysts, coordinators and administrators. Your role does not include it." />
+    );
   }
 
   const params = await searchParams;

@@ -201,5 +201,6 @@ test("an analyst sees aggregate reporting and no patient records", async ({ page
   await expect(page.getByText("How these figures are calculated")).toBeVisible();
 
   await page.goto("/app/patients");
-  await expect(page.getByText(/does not include|not allow|not available/i).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Not available to your role" })).toBeVisible();
+  await expect(page.getByText(/Patient records are available to clinical/i)).toBeVisible();
 });

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CalendarDays, CheckCircle2, HelpCircle } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { FilterBar, Pagination } from "@/components/app/filter-bar";
 import { AppointmentStatusBadge } from "@/components/app/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { AppointmentStatus } from "@/db/schema";
+import { canAnywhere } from "@/lib/auth/context";
 import { requireAuth } from "@/lib/auth/session";
 import { listAppointments, type AppointmentRange } from "@/lib/appointments/queries";
 import { formatDate, formatTime } from "@/lib/utils";
@@ -38,6 +40,12 @@ const STATUSES: AppointmentStatus[] = [
 
 export default async function AppointmentsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireAuth();
+  if (!canAnywhere(ctx, "referral:read")) {
+    return (
+      <NoAccess description="Appointments are part of the referral record, so they are available only to roles that can read referrals." />
+    );
+  }
+
   const params = await searchParams;
 
   const rangeParam = typeof params.range === "string" ? params.range : "week";

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus, Users } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { FilterBar, Pagination } from "@/components/app/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,12 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function PatientsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireAuth();
+  if (!canAnywhere(ctx, "patient:read")) {
+    return (
+      <NoAccess description="Patient records are available to clinical and coordination roles. Your role does not include them." />
+    );
+  }
+
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : null;
   const page = Number(typeof params.page === "string" ? params.page : "1");

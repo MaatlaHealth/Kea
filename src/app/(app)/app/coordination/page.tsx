@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ClipboardCheck, Inbox, MessageSquareWarning, Timer, UserRoundSearch } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { MetricCard } from "@/components/app/metric-card";
 import { PriorityBadge, ReferralStatusBadge, TaskStatusBadge } from "@/components/app/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,6 @@ import {
   unacknowledgedReferrals,
 } from "@/lib/coordination/queries";
 import { TASK_KIND_LABELS } from "@/lib/coordination/tasks";
-import { AuthorisationError } from "@/lib/errors";
 import { formatDate, formatRelative, humanise } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -37,7 +37,9 @@ export const metadata: Metadata = {
 export default async function CoordinationPage() {
   const ctx = await requireAuth();
   if (!canAnywhere(ctx, "task:read")) {
-    throw new AuthorisationError("Your role does not include the coordination workspace.");
+    return (
+      <NoAccess description="The coordination workspace is available to clinical and coordination roles. Your role does not include it." />
+    );
   }
 
   const [counts, missed, overdue, manual, mine, unacknowledged, failures] = await Promise.all([

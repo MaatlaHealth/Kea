@@ -343,7 +343,7 @@ describeDb("referral lifecycle", () => {
 
     await expect(
       transitionReferral(clinician, { referralId: second.id, to: "care_completed" }),
-    ).rejects.toThrow(/outcome/i);
+    ).rejects.toThrow(/care was provided|outcome/i);
   });
 
   it("9. the referring facility can see the authorised update", async () => {

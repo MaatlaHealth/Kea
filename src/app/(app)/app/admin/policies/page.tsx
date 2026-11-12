@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { asc, eq } from "drizzle-orm";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { EscalationPolicyForm } from "@/components/app/admin-forms";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert } from "@/components/ui/feedback";
@@ -23,7 +24,13 @@ export default async function PoliciesPage() {
   const organisationId = primaryOrganisationId(ctx);
   if (!organisationId) throw new AuthorisationError("No organisation is in scope for your account.");
   if (!can(ctx, "settings:manage", { organisationId })) {
-    throw new AuthorisationError("Your role does not allow changing escalation policy.");
+    return (
+      <NoAccess
+        description="Escalation thresholds decide when Kea raises a task, so only an administrator can change them."
+        backHref="/app/admin"
+        backLabel="Back to administration"
+      />
+    );
   }
 
   const facilityRows = await db

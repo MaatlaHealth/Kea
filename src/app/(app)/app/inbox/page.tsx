@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Inbox } from "lucide-react";
 
 import { PageHeader } from "@/components/app/app-shell";
+import { NoAccess } from "@/components/app/no-access";
 import { FilterBar, Pagination } from "@/components/app/filter-bar";
 import { PriorityBadge, ReferralStatusBadge } from "@/components/app/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ReferralStatus } from "@/db/schema";
+import { canAnywhere } from "@/lib/auth/context";
 import { requireAuth } from "@/lib/auth/session";
 import { listReferrals } from "@/lib/referrals/queries";
 import { formatDate, formatRelative } from "@/lib/utils";
@@ -51,6 +53,12 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function InboxPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireAuth();
+  if (!canAnywhere(ctx, "referral:read")) {
+    return (
+      <NoAccess description="The incoming referral queue is available to clinical and coordination roles. Your role does not include it." />
+    );
+  }
+
   const params = await searchParams;
   const queueKey = typeof params.queue === "string" ? params.queue : "awaiting";
   const queue = QUEUE_PRESETS[queueKey] ?? QUEUE_PRESETS.awaiting;
