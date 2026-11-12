@@ -22,7 +22,7 @@ installing this software.
 ## Vercel
 
 1. Import the repository. The framework preset is detected.
-2. Set the environment variables from [environment.md](docs/environment.md) in
+2. Set the environment variables from [environment.md](environment.md) in
    the project settings. At minimum `DATABASE_URL`, `DATABASE_SSL=require` and
    `APP_URL`.
 3. Deploy.

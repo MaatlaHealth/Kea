@@ -139,6 +139,13 @@ Kea is a working system with real database operations, authenticated users,
 server enforced authorisation and a complete referral workflow. It has been
 built to be piloted.
 
+Continuous integration runs type checking, linting, 89 unit tests, 29
+integration tests against a real PostgreSQL database, and an end to end suite
+that walks the whole referral journey through a browser, plus an automated
+accessibility scan of every public page. It also audits dependencies, scans
+the full history for secrets and runs CodeQL over both languages. All of it
+is green on `main`.
+
 It has **not** had an independent security review or penetration test, it has
 **no** clinical certification, and its prediction model is **not** validated.
 The outstanding approvals before any deployment holding real patient records
