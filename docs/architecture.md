@@ -138,6 +138,17 @@ production build imports every route module to collect page data and must not
 need a database to do so, and a process that never queries never opens a
 connection.
 
+## The edge guard
+
+`src/proxy.ts` redirects a visitor with no session cookie to the sign in page
+rather than letting them reach a screen that will fail. It checks only that a
+cookie is present. It is a convenience, not a control: every page and every
+action resolves the session against the database and checks permissions on
+the server, whatever the edge decided.
+
+This file used to be `middleware.ts`. Next 16 renamed the convention to
+`proxy` and reads an export of that name.
+
 ## Scheduled work
 
 `src/lib/jobs/runner.ts` holds the only code that changes a referral without a

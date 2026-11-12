@@ -133,9 +133,6 @@ useful:
 - **No independent accessibility audit.** Automated WCAG checks run in CI.
 - **No load or denial of service testing.**
 - **Moderate advisories remain in development tooling**, as described above.
-- **`src/middleware.ts` uses the convention Next 16 deprecated** in favour of
-  `proxy.ts`. It still runs, and it is a convenience rather than a control:
-  every page and action resolves the session on the server regardless.
 
 The full list, including the governance work a deployment must complete, is
 in [docs/data-governance.md](docs/data-governance.md).

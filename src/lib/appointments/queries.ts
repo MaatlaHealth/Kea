@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -63,8 +63,15 @@ export async function listAppointments(
 
   const { from, to } = rangeBounds(filters.range ?? "week", now);
 
+  // Scope follows the referral, not the appointment's own facility. The clinic
+  // that sent a patient to hospital needs to see when she is expected there,
+  // and it can already see that appointment on the referral itself.
   const where = and(
-    inArray(appointments.facilityId, filters.facilityId ? [filters.facilityId] : scopeIds),
+    or(
+      inArray(referrals.referringFacilityId, scopeIds),
+      inArray(referrals.receivingFacilityId, scopeIds),
+    ),
+    filters.facilityId ? eq(appointments.facilityId, filters.facilityId) : undefined,
     gte(appointments.scheduledFor, from),
     lte(appointments.scheduledFor, to),
     filters.statuses?.length ? inArray(appointments.status, filters.statuses) : undefined,
@@ -100,7 +107,11 @@ export async function listAppointments(
       )
       .limit(pageSize)
       .offset((page - 1) * pageSize),
-    db.select({ value: count() }).from(appointments).where(where),
+    db
+      .select({ value: count() })
+      .from(appointments)
+      .innerJoin(referrals, eq(referrals.id, appointments.referralId))
+      .where(where),
   ]);
 
   return { rows, total: totalRow[0]?.value ?? 0, page, pageSize };

@@ -396,12 +396,15 @@ export async function dashboardMetrics(
       .select({ value: count() })
       .from(referrals)
       .where(and(inScope, inArray(referrals.status, ["submitted", "received"]))),
+    // Scoped through the referral, so a clinic sees when its patients are
+    // expected at the hospital, not only visits held at the clinic itself.
     db
       .select({ value: count() })
       .from(appointments)
+      .innerJoin(referrals, eq(referrals.id, appointments.referralId))
       .where(
         and(
-          inArray(appointments.facilityId, scopeIds),
+          inScope,
           inArray(appointments.status, ["scheduled", "rescheduled"]),
           gte(appointments.scheduledFor, now),
           lte(appointments.scheduledFor, weekAhead),
@@ -508,7 +511,10 @@ export async function upcomingAppointments(ctx: AuthContext, days = 7, limit = 2
     .innerJoin(facilities, eq(facilities.id, appointments.facilityId))
     .where(
       and(
-        inArray(appointments.facilityId, scopeIds),
+        or(
+          inArray(referrals.referringFacilityId, scopeIds),
+          inArray(referrals.receivingFacilityId, scopeIds),
+        ),
         inArray(appointments.status, ["scheduled", "rescheduled"]),
         gte(appointments.scheduledFor, now),
         lte(appointments.scheduledFor, until),

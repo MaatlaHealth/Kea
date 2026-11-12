@@ -129,9 +129,10 @@ export async function headlineMetrics(
       attended: sql<number>`count(*) filter (where ${appointments.status} = 'attended')::int`,
     })
     .from(appointments)
+    .innerJoin(referrals, eq(referrals.id, appointments.referralId))
     .where(
       and(
-        inArray(appointments.facilityId, facilityIds),
+        inScope(facilityIds),
         gte(appointments.scheduledFor, range.from),
         lte(appointments.scheduledFor, range.to),
       ),

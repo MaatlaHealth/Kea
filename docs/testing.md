@@ -116,11 +116,17 @@ interface calls. **Skipped, not failed, when no database is reachable**, so
 
 Playwright, driving the real interface against seeded demonstration data.
 
+`auth.setup.ts` signs in once per role and saves the session. The journey
+suite then opens a context per step from that saved session. That is faster,
+and it means the suite exercises the workflow rather than spending the sign in
+rate limit on itself.
+
 `referral-journey.spec.ts` repeats the journey through the browser: register,
 refer, confirm the nurse has no acknowledge button, acknowledge, book, see the
 update at the clinic, miss the appointment, work the coordination task,
-rebook, record attendance and the outcome, see it at the clinic, and confirm
-the analyst reaches analytics and not patients.
+rebook, record attendance and the outcome, see it at the clinic, close the
+pathway, and confirm the analyst reaches analytics and is told plainly that
+the patient list is not available to their role.
 
 `public-site.mobile.spec.ts` runs on a Pixel 7 viewport and checks each public
 page for a visible heading, no horizontal overflow, and zero automated
@@ -161,6 +167,15 @@ Worth recording, because it is the argument for keeping them:
 - **A missing permission.** The same run showed that a nurse could not record
   follow up as complete or close a referral, so a service without a dedicated
   coordinator could never close a pathway.
+- **A rate limit that would have locked out a clinic.** The end to end run
+  exhausted the sign in limit partway through the journey. The limit was one
+  bucket of eight attempts per ten minutes covering both the account and the
+  network address, and a clinic puts its whole staff behind one address. The
+  per account limit stayed; the per address limit is now far more generous.
+- **Three colour contrast failures.** The automated scan found white on
+  teal-600 at 3.26:1 for the secondary button, white on coral-500 at 2.67:1
+  for the unread count, and placeholder text at 3.03:1 because of an opacity
+  modifier. All three now pass AA.
 
 ## Running the integration tests locally
 
@@ -172,6 +187,14 @@ DATABASE_URL=postgresql://localhost:5432/kea_test DATABASE_SSL=disable npm test
 
 The suite truncates every table before it runs, so point it at a disposable
 database.
+
+The public and accessibility suite needs no database, so it can be run on its
+own:
+
+```bash
+npm run build
+npx playwright test --project=mobile-chromium
+```
 
 ## Running the end to end tests locally
 
