@@ -52,3 +52,6 @@ npm-debug.log*
 
 # Playwright saved sessions
 playwright/.auth/
+
+# Written by `next dev` on every run, not part of the project
+AGENTS.md
