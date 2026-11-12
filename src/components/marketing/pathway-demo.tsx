@@ -110,19 +110,28 @@ const STAGES: Stage[] = [
 
 const ADVANCE_MS = 5200;
 
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
 export function PathwayDemo() {
   const [index, setIndex] = React.useState(0);
-  const [playing, setPlaying] = React.useState(true);
-  const [reducedMotion, setReducedMotion] = React.useState(false);
+  const [playRequested, setPlayRequested] = React.useState(true);
 
-  React.useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(query.matches);
-    if (query.matches) setPlaying(false);
-    const listener = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
-    query.addEventListener("change", listener);
-    return () => query.removeEventListener("change", listener);
-  }, []);
+  // The motion preference is external state, read directly rather than
+  // mirrored into React state by an effect.
+  const reducedMotion = React.useSyncExternalStore(
+    (notify) => {
+      const query = window.matchMedia(REDUCED_MOTION_QUERY);
+      query.addEventListener("change", notify);
+      return () => query.removeEventListener("change", notify);
+    },
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => false,
+  );
+
+  // Someone who asked for reduced motion never gets the automatic advance,
+  // whatever the play control says.
+  const playing = playRequested && !reducedMotion;
+  const setPlaying = setPlayRequested;
 
   React.useEffect(() => {
     if (!playing) return;

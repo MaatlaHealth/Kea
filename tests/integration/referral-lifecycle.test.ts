@@ -25,7 +25,7 @@ import {
   referrals,
 } from "@/db/schema";
 import { findPatientAccess, requirePatientAccess } from "@/lib/access";
-import { headlineMetrics, rangeFromDays } from "@/lib/analytics/queries";
+import { headlineMetrics, rangeFromDays, SMALL_CELL_THRESHOLD } from "@/lib/analytics/queries";
 import type { AuthContext } from "@/lib/auth/context";
 import { listTasks } from "@/lib/coordination/queries";
 import { getPatientProfile } from "@/lib/patients/queries";
@@ -410,12 +410,15 @@ describeDb("referral lifecycle", () => {
 
   it("suppresses rates when the denominator is below the threshold", async () => {
     const metrics = await headlineMetrics(coordinator, rangeFromDays(30));
-    // With fewer than five submitted referrals the rate must be withheld.
-    if (metrics.submitted < 5) {
-      expect(metrics.completionRate).toBeNull();
-      expect(metrics.suppressed).toBe(true);
-    } else {
+
+    if (metrics.submitted >= SMALL_CELL_THRESHOLD) {
       expect(metrics.completionRate).not.toBeNull();
+      expect(metrics.suppressed).toBe(false);
+    } else {
+      expect(metrics.completionRate).toBeNull();
+      // The suppression flag marks a period that has data but too little of
+      // it. A period with nothing in it is empty, not suppressed.
+      expect(metrics.suppressed).toBe(metrics.submitted > 0);
     }
   });
 

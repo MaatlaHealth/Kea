@@ -103,8 +103,18 @@ patient identifiers cannot enter the audit trail.
 prefixed `NEXT_PUBLIC_`. Secret scanning runs over the full history on every
 push.
 
-**Dependencies.** `npm audit` and `pip-audit` run on every push and weekly.
-CodeQL analyses both languages.
+**Dependencies.** `npm audit --omit=dev --audit-level=high` runs on every
+push and weekly, and the build fails if a production dependency carries a high
+or critical advisory. At the time of writing there are none. `pip-audit`
+covers the prediction service, and CodeQL analyses both languages.
+
+Development dependencies are audited too but do not fail the build. Several
+moderate advisories remain in tooling we do not control: the esbuild bundled
+inside `drizzle-kit`, and the `@typescript-eslint` packages pinned by
+`eslint-config-next`. Neither ships in the application, and neither has an
+upstream fix that does not mean downgrading the tool below what the schema
+and the lint config need. They are tracked and will be picked up when
+upstream releases.
 
 ### What is not done
 
@@ -122,6 +132,10 @@ useful:
 - **No bug bounty.** Reports are still welcome.
 - **No independent accessibility audit.** Automated WCAG checks run in CI.
 - **No load or denial of service testing.**
+- **Moderate advisories remain in development tooling**, as described above.
+- **`src/middleware.ts` uses the convention Next 16 deprecated** in favour of
+  `proxy.ts`. It still runs, and it is a convenience rather than a control:
+  every page and action resolves the session on the server regardless.
 
 The full list, including the governance work a deployment must complete, is
 in [docs/data-governance.md](docs/data-governance.md).

@@ -58,6 +58,10 @@ export function PatientEditDialog({ patient }: { patient: EditablePatient }) {
   React.useEffect(() => {
     if (state.status === "success") {
       toast.success(state.message ?? "Record updated.");
+      // A server action result arrives with no callback, so the local reset
+      // happens here. It runs once per submission, after a network round
+      // trip, not in a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(false);
       router.refresh();
     }

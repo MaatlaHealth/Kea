@@ -30,12 +30,18 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
     }
   }, []);
 
-  React.useEffect(() => {
-    if (open) void load();
-  }, [open, load]);
+  // Loading happens in the open event rather than in an effect watching the
+  // open flag, so the fetch is tied to the interaction that caused it.
+  const onOpenChange = React.useCallback(
+    (next: boolean) => {
+      setOpen(next);
+      if (next) void load();
+    },
+    [load],
+  );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"

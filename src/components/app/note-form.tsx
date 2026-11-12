@@ -35,6 +35,10 @@ export function NoteForm({
   React.useEffect(() => {
     if (state.status === "success") {
       toast.success(state.message ?? "Note saved.");
+      // A server action result arrives with no callback, so the local reset
+      // happens here. It runs once per submission, after a network round
+      // trip, not in a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBody("");
       setAiAssisted(false);
       router.refresh();

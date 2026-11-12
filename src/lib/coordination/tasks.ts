@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { db, type Executor } from "@/db";
 import { followUpTasks, type TaskKind } from "@/db/schema";
@@ -49,7 +49,12 @@ export async function createTask(
       createdBySystem: input.createdBySystem ?? null,
       dedupeKey: input.dedupeKey ?? null,
     })
-    .onConflictDoNothing({ target: followUpTasks.dedupeKey })
+    // The unique index on dedupe_key is partial, so the predicate has to be
+    // repeated here for PostgreSQL to accept it as the conflict arbiter.
+    .onConflictDoNothing({
+      target: followUpTasks.dedupeKey,
+      where: sql`dedupe_key is not null`,
+    })
     .returning({ id: followUpTasks.id });
 
   if (inserted.length > 0) {

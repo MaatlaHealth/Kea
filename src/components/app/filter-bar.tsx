@@ -43,13 +43,18 @@ export function FilterBar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [term, setTerm] = React.useState(searchParams.get("q") ?? "");
+  const currentSearch = searchParams.get("q") ?? "";
+  const [term, setTerm] = React.useState(currentSearch);
+  const [syncedSearch, setSyncedSearch] = React.useState(currentSearch);
   const [pending, startTransition] = React.useTransition();
 
-  const currentSearch = searchParams.get("q") ?? "";
-  React.useEffect(() => {
+  // When the URL changes, bring the input back in step with it. Adjusting
+  // state during render is the supported pattern for this, and avoids the
+  // extra commit an effect would cause.
+  if (currentSearch !== syncedSearch) {
+    setSyncedSearch(currentSearch);
     setTerm(currentSearch);
-  }, [currentSearch]);
+  }
 
   const update = React.useCallback(
     (changes: Record<string, string | null>) => {

@@ -47,9 +47,13 @@ export function PatientForm({ facilities }: { facilities: FacilityChoice[] }) {
       ? (state.data?.duplicates ?? [])
       : [];
 
-  React.useEffect(() => {
+  // A fresh set of duplicate candidates withdraws any previous
+  // acknowledgement, so the clinician has to look at these ones.
+  const [acknowledgedFor, setAcknowledgedFor] = React.useState(duplicates);
+  if (duplicates !== acknowledgedFor) {
+    setAcknowledgedFor(duplicates);
     if (duplicates.length > 0) setAcknowledged(false);
-  }, [duplicates.length]);
+  }
 
   return (
     <form action={formAction} className="space-y-8">

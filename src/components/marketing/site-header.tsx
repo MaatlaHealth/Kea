@@ -17,19 +17,21 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
-  const [scrolled, setScrolled] = React.useState(false);
-
-  React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  React.useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // The menu is open only for the route it was opened on, so navigating
+  // closes it without an effect that resets state.
+  const [openedOn, setOpenedOn] = React.useState<string | null>(null);
+  const open = openedOn === pathname;
+  const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
+  // Scroll position is external state, so it is read with
+  // useSyncExternalStore rather than mirrored into React state by an effect.
+  const scrolled = React.useSyncExternalStore(
+    (notify) => {
+      window.addEventListener("scroll", notify, { passive: true });
+      return () => window.removeEventListener("scroll", notify);
+    },
+    () => window.scrollY > 8,
+    () => false,
+  );
 
   return (
     <header
@@ -76,7 +78,7 @@ export function SiteHeader() {
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => setOpen(!open)}
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>

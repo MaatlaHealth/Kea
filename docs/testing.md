@@ -2,7 +2,7 @@
 
 ```bash
 npm run typecheck     # TypeScript, no emit
-npm run lint          # ESLint
+npm run lint          # ESLint, flat config in eslint.config.mjs
 npm test              # Vitest: unit, plus integration when a database is reachable
 npm run test:e2e      # Playwright, needs seeded data and KEA_DEMO_PASSWORD
 npm run verify        # typecheck, lint and test together

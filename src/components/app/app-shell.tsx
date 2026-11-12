@@ -41,12 +41,13 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
   const allowed = React.useMemo(() => new Set(allowedHrefs), [allowedHrefs]);
 
-  React.useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  // The drawer belongs to the route it was opened on, so navigating closes it
+  // without an effect that resets state after the fact.
+  const [openedOn, setOpenedOn] = React.useState<string | null>(null);
+  const mobileOpen = openedOn === pathname;
+  const setMobileOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
 
   const groups = NAV_GROUPS.map((group) => ({
     ...group,

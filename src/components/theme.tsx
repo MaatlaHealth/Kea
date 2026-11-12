@@ -25,11 +25,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function ThemeToggle() {
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
+  const { setTheme } = useTheme();
 
-  React.useEffect(() => setMounted(true), []);
-
+  // The icon is chosen by CSS from the class next-themes puts on <html>,
+  // rather than by state set after mount. That keeps the server and client
+  // markup identical without a hydration flag.
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -38,11 +38,8 @@ export function ThemeToggle() {
           className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Change colour theme"
         >
-          {mounted && resolvedTheme === "dark" ? (
-            <Moon className="size-5" />
-          ) : (
-            <Sun className="size-5" />
-          )}
+          <Sun className="size-5 dark:hidden" />
+          <Moon className="hidden size-5 dark:block" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

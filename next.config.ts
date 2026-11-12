@@ -39,8 +39,13 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  /** Produces .next/standalone, which the container image runs directly. */
-  output: "standalone",
+  /**
+   * The container image runs .next/standalone directly, which is smaller than
+   * shipping node_modules. Everywhere else, including the end to end suite,
+   * uses `next start`, which does not work with a standalone build, so the
+   * option is set only by the Docker build.
+   */
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   serverExternalPackages: ["postgres", "twilio", "nodemailer"],
   experimental: {
     serverActions: {

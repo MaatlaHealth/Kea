@@ -21,7 +21,6 @@ import { idleState, type ActionState } from "@/server/action-result";
  */
 export function PortalSignIn() {
   const [phone, setPhone] = React.useState("");
-  const [sent, setSent] = React.useState(false);
 
   const [requestState, requestAction, requesting] = useActionState<ActionState, FormData>(
     requestPortalCodeAction,
@@ -32,9 +31,9 @@ export function PortalSignIn() {
     idleState,
   );
 
-  React.useEffect(() => {
-    if (requestState.status === "success") setSent(true);
-  }, [requestState]);
+  // Whether to show the code step is a fact about the last request, not
+  // separate state to keep in step with it.
+  const sent = requestState.status === "success";
 
   return (
     <div className="space-y-6">

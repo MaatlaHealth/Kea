@@ -28,7 +28,7 @@ const enquirySchema = z.object({
   /** Hidden field. Real users leave it empty. */
   website: z.string().max(0).optional(),
   consent: z.literal("on", {
-    errorMap: () => ({ message: "Please confirm you agree to be contacted about a pilot." }),
+    error: "Please confirm you agree to be contacted about a pilot.",
   }),
 });
 

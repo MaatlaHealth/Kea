@@ -16,6 +16,7 @@ RUN npm ci --ignore-scripts=false --no-audit --no-fund
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_OUTPUT=standalone
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # A placeholder is enough for the build: environment is validated at runtime,

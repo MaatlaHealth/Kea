@@ -20,7 +20,6 @@ type Sql = ReturnType<typeof postgres>;
 type Orm = ReturnType<typeof drizzle<typeof schema>>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __keaSql: Sql | undefined;
 }
 

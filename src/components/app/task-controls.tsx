@@ -64,6 +64,10 @@ export function ContactAttemptForm({ taskId }: { taskId: string }) {
   React.useEffect(() => {
     if (state.status === "success") {
       toast.success(state.message ?? "Attempt recorded.");
+      // A server action result arrives with no callback, so the local reset
+      // happens here. It runs once per submission, after a network round
+      // trip, not in a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setKey((value) => value + 1);
       router.refresh();
     }

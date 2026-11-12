@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { db, type Executor } from "@/db";
 import {
@@ -169,7 +169,12 @@ export async function queueMessage(
       idempotencyKey: input.idempotencyKey,
       nextAttemptAt: new Date(),
     })
-    .onConflictDoNothing({ target: messages.idempotencyKey })
+    // The unique index on idempotency_key is partial, so the predicate has to
+    // be repeated here for PostgreSQL to accept it as the conflict arbiter.
+    .onConflictDoNothing({
+      target: messages.idempotencyKey,
+      where: sql`idempotency_key is not null`,
+    })
     .returning({ id: messages.id });
 
   const row = inserted[0];
