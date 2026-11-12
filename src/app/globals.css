@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm white #FCFAF9 */
+    --background: 20 33% 98%;
+    /* Dark text #24202A */
+    --foreground: 264 14% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 264 14% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 264 14% 15%;
+
+    /* Deep plum #55205C */
+    --primary: 292 48% 25%;
+    --primary-foreground: 20 33% 98%;
+
+    /* Teal #009F9C */
+    --secondary: 179 100% 31%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Warm coral #F47B68 */
+    --accent: 9 86% 68%;
+    --accent-foreground: 12 60% 18%;
+
+    --muted: 285 16% 95%;
+    --muted-foreground: 268 8% 42%;
+
+    --destructive: 0 68% 44%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 285 16% 89%;
+    --input: 285 16% 86%;
+    --ring: 292 48% 35%;
+
+    --radius: 0.625rem;
+
+    /*
+     * Chart palette. Validated against the warm white chart surface with
+     * scripts/validate_palette.js: lightness band, chroma floor, adjacent pair
+     * separation under protanopia, deuteranopia and tritanopia, normal vision
+     * separation and contrast all pass. Do not substitute a value without
+     * re-running that check.
+     */
+    --chart-1: #814e8b;
+    --chart-2: #009f9c;
+    --chart-3: #dd4b2d;
+    --chart-sequential: #009f9c;
+    --chart-grid: #e4dce6;
+    --chart-axis: #6c6474;
+  }
+
+  .dark {
+    --background: 270 16% 9%;
+    --foreground: 20 20% 95%;
+
+    --card: 272 16% 12%;
+    --card-foreground: 20 20% 95%;
+
+    --popover: 272 16% 12%;
+    --popover-foreground: 20 20% 95%;
+
+    --primary: 292 40% 70%;
+    --primary-foreground: 292 48% 14%;
+
+    --secondary: 179 60% 42%;
+    --secondary-foreground: 180 60% 8%;
+
+    --accent: 9 70% 64%;
+    --accent-foreground: 12 60% 12%;
+
+    --muted: 272 12% 18%;
+    --muted-foreground: 272 8% 66%;
+
+    --destructive: 0 62% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 272 12% 22%;
+    --input: 272 12% 26%;
+    --ring: 292 40% 60%;
+
+    /* Dark steps of the same three hues, validated against the dark surface. */
+    --chart-1: #a95ec6;
+    --chart-2: #139b8f;
+    --chart-3: #e0704f;
+    --chart-sequential: #139b8f;
+    --chart-grid: #342d3a;
+    --chart-axis: #a79fae;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: normal;
+  }
+
+  ::selection {
+    @apply bg-plum-200 text-plum-900;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .section {
+    @apply py-16 sm:py-20 lg:py-28;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-teal-700;
+  }
+
+  .prose-kea {
+    @apply max-w-none text-[0.975rem] leading-7 text-muted-foreground;
+  }
+
+  .prose-kea h2 {
+    @apply mt-10 mb-3 font-display text-xl font-semibold text-foreground;
+  }
+
+  .prose-kea h3 {
+    @apply mt-7 mb-2 font-display text-base font-semibold text-foreground;
+  }
+
+  .prose-kea p {
+    @apply mb-4;
+  }
+
+  .prose-kea ul {
+    @apply mb-4 list-disc space-y-1.5 pl-5;
+  }
+
+  .prose-kea ol {
+    @apply mb-4 list-decimal space-y-1.5 pl-5;
+  }
+
+  .prose-kea a {
+    @apply font-medium text-plum-700 underline underline-offset-4 hover:text-plum-900;
+  }
+
+  .prose-kea strong {
+    @apply font-semibold text-foreground;
+  }
+
+  .grid-backdrop {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 50%, transparent 100%);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

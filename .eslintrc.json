@@ -1,0 +1,53 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "services/",
+    "src/db/migrations/",
+    "playwright-report/",
+    "test-results/"
+  ],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    "no-console": ["warn", { "allow": ["warn", "error", "info"] }]
+  },
+  "overrides": [
+    {
+      "files": ["src/components/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@/db",
+                "message": "Components must not reach the database. Load data in a server component or a server action and pass it in as a prop."
+              },
+              {
+                "name": "postgres",
+                "message": "Components must not open a database connection."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["@/lib/*/service", "@/lib/*/queries", "@/lib/jobs/*", "@/lib/storage"],
+                "message": "Components must not call service or query modules directly. Pass the data in, or call a server action."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["tests/**/*.ts", "e2e/**/*.ts", "scripts/**/*.{ts,mjs}"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Normalise line endings so the repository is identical on every platform.
+* text=auto eol=lf
+
+# Binary assets must not be touched.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.joblib binary
+
+# Keep generated files out of diffs and language statistics.
+package-lock.json linguist-generated=true -diff
+src/db/migrations/meta/*.json linguist-generated=true -diff

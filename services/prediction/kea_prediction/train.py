@@ -1,0 +1,171 @@
+"""Model training.
+
+Run with: python -m kea_prediction.train
+
+Produces a versioned artefact under artifacts/ containing the fitted pipeline
+and a metadata file recording the feature set version, the algorithm, the data
+source and the evaluation metrics.
+
+The baseline is logistic regression, chosen because its coefficients can be
+read and argued with. A gradient boosted model is trained alongside it for
+comparison only; the service serves the baseline unless KEA_MODEL_ALGORITHM
+says otherwise, so that what the product shows is explainable by default.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+
+import joblib
+import numpy as np
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    average_precision_score,
+    brier_score_loss,
+    log_loss,
+    roc_auc_score,
+)
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+from .features import FEATURE_NAMES, FEATURE_SET_VERSION
+from .synthetic import generate
+
+ARTIFACT_DIR = Path(__file__).resolve().parent.parent / "artifacts"
+MODEL_NAME = "referral-non-attendance"
+
+
+def build_logistic() -> Pipeline:
+    return Pipeline(
+        steps=[
+            ("scale", StandardScaler()),
+            (
+                "model",
+                LogisticRegression(
+                    penalty="l2",
+                    C=1.0,
+                    max_iter=2000,
+                    class_weight="balanced",
+                    random_state=7,
+                ),
+            ),
+        ]
+    )
+
+
+def build_gradient_boosted() -> Pipeline:
+    return Pipeline(
+        steps=[
+            (
+                "model",
+                HistGradientBoostingClassifier(
+                    max_depth=4,
+                    learning_rate=0.06,
+                    max_iter=300,
+                    l2_regularization=1.0,
+                    random_state=7,
+                ),
+            )
+        ]
+    )
+
+
+def evaluate(pipeline: Pipeline, x_test: np.ndarray, y_test: np.ndarray) -> dict[str, float]:
+    probabilities = pipeline.predict_proba(x_test)[:, 1]
+    return {
+        "roc_auc": float(roc_auc_score(y_test, probabilities)),
+        "average_precision": float(average_precision_score(y_test, probabilities)),
+        "brier_score": float(brier_score_loss(y_test, probabilities)),
+        "log_loss": float(log_loss(y_test, probabilities)),
+        "positive_rate": float(np.mean(y_test)),
+        "n_test": int(len(y_test)),
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Train the referral non-attendance model.")
+    parser.add_argument("--rows", type=int, default=8000, help="Synthetic rows to generate.")
+    parser.add_argument("--seed", type=int, default=20260101)
+    parser.add_argument(
+        "--version",
+        type=str,
+        default=None,
+        help="Model version string. Defaults to a date based version.",
+    )
+    args = parser.parse_args()
+
+    version = args.version or f"0.1.{datetime.now(UTC).strftime('%Y%m%d')}"
+
+    frame = generate(n=args.rows, seed=args.seed)
+    x = frame[list(FEATURE_NAMES)].to_numpy(dtype=float)
+    y = frame["did_not_attend"].to_numpy(dtype=int)
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.25, random_state=7, stratify=y
+    )
+
+    logistic = build_logistic().fit(x_train, y_train)
+    logistic_metrics = evaluate(logistic, x_test, y_test)
+
+    boosted = build_gradient_boosted().fit(x_train, y_train)
+    boosted_metrics = evaluate(boosted, x_test, y_test)
+
+    ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+    joblib.dump(logistic, ARTIFACT_DIR / "model.joblib")
+    joblib.dump(boosted, ARTIFACT_DIR / "model-gradient-boosted.joblib")
+
+    coefficients = logistic.named_steps["model"].coef_[0].tolist()
+    scaler = logistic.named_steps["scale"]
+
+    metadata = {
+        "model_name": MODEL_NAME,
+        "model_version": version,
+        "feature_set_version": FEATURE_SET_VERSION,
+        "algorithm": "logistic_regression",
+        "served_model": "model.joblib",
+        "feature_names": list(FEATURE_NAMES),
+        "coefficients": dict(zip(FEATURE_NAMES, coefficients, strict=False)),
+        "feature_means": scaler.mean_.tolist(),
+        "feature_scales": scaler.scale_.tolist(),
+        "trained_at": datetime.now(UTC).isoformat(),
+        "data_source": "synthetic",
+        "trained_on_real_data": False,
+        "clinically_validated": False,
+        "rows": int(args.rows),
+        "seed": int(args.seed),
+        "metrics": {
+            "logistic_regression": logistic_metrics,
+            "hist_gradient_boosting": boosted_metrics,
+        },
+        "warning": (
+            "Trained on synthetic data generated by kea_prediction.synthetic. "
+            "These metrics describe the generator, not real patients. This model "
+            "is experimental and is not validated for patient care."
+        ),
+    }
+
+    (ARTIFACT_DIR / "model-metadata.json").write_text(
+        json.dumps(metadata, indent=2), encoding="utf-8"
+    )
+
+    print(f"Trained {MODEL_NAME} {version} on {args.rows} synthetic rows.")
+    print("")
+    print("Logistic regression (served):")
+    for key, value in logistic_metrics.items():
+        print(f"  {key}: {value:.4f}" if isinstance(value, float) else f"  {key}: {value}")
+    print("")
+    print("Gradient boosted (comparison only):")
+    for key, value in boosted_metrics.items():
+        print(f"  {key}: {value:.4f}" if isinstance(value, float) else f"  {key}: {value}")
+    print("")
+    print("These figures come from synthetic data. They are not evidence of clinical")
+    print("effectiveness and must not be presented as such.")
+
+
+if __name__ == "__main__":
+    main()

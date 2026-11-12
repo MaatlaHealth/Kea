@@ -1,0 +1,66 @@
+# ---------------------------------------------------------------------------
+# Local development stack for Kea.
+#
+#   docker compose up --build
+#   docker compose exec web npm run db:migrate
+#   docker compose exec web npm run seed:demo
+#
+# The credentials below are local development values. They are not used
+# anywhere else and must not be reused in a deployed environment.
+# ---------------------------------------------------------------------------
+
+name: kea
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kea
+      POSTGRES_PASSWORD: kea_local_dev
+      POSTGRES_DB: kea
+    ports:
+      - "5432:5432"
+    volumes:
+      - kea-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kea -d kea"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  prediction:
+    build:
+      context: ./services/prediction
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: INFO
+      # Set a token here and the same value in the web service to require one.
+      PREDICTION_SERVICE_TOKEN: ""
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://kea:kea_local_dev@db:5432/kea
+      DATABASE_SSL: disable
+      APP_URL: http://localhost:3000
+      SESSION_COOKIE_NAME: kea_session
+      SESSION_TTL_HOURS: "12"
+      PATIENT_SESSION_TTL_MINUTES: "45"
+      MESSAGING_ENABLED: "false"
+      AI_ASSIST_ENABLED: "false"
+      PREDICTION_ENABLED: "false"
+      PREDICTION_SERVICE_URL: http://prediction:8000
+      LOG_LEVEL: info
+    ports:
+      - "3000:3000"
+
+volumes:
+  kea-db:
